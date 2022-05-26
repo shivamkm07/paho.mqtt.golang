@@ -184,13 +184,13 @@ func (r *router) matchAndDispatch(messages <-chan *packets.PublishPacket, order 
 					} else {
 						hd := e.Value.(*route).callback
 						wg.Add(1)
-						go func() {
+						go func(m Message) {
 							hd(client, m)
 							if !m.NoAutoAck() {
 								m.Ack()
 							}
 							wg.Done()
-						}()
+						}(m)
 					}
 					sent = true
 				}
@@ -201,13 +201,13 @@ func (r *router) matchAndDispatch(messages <-chan *packets.PublishPacket, order 
 						handlers = append(handlers, r.defaultHandler)
 					} else {
 						wg.Add(1)
-						go func() {
+						go func(m Message) {
 							r.defaultHandler(client, m)
 							if !m.NoAutoAck() {
 								m.Ack()
 							}
 							wg.Done()
-						}()
+						}(m)
 					}
 				} else {
 					DEBUG.Println(ROU, "matchAndDispatch received message and no handler was available. Message will NOT be acknowledged.")
